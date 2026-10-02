@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>TimeWay</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+               "Segoe UI", sans-serif;
+  background: #f5f5f7;
+  color: #111;
+}
+
+.app {
+  max-width: 520px;
+  min-height: 100vh;
+  margin: auto;
+  background: #fff;
+  padding: 25px 18px 30px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.logo {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.date {
+  color: #777;
+  font-size: 13px;
+}
+
+.clock-card {
+  background: #f2f2f7;
+  border-radius: 30px;
+  padding: 35px 15px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.time {
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -3px;
+}
+
+.seconds {
+  font-size: 17px;
+  color: #777;
+  margin-top: 3px;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: #f2f2f7;
+  padding: 5px;
+  border-radius: 17px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  padding: 12px 5px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tab.active {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.card {
+  background: #f2f2f7;
+  border-radius: 27px;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.big-number {
+  font-size: 58px;
+  font-weight: 700;
+  margin: 10px 0 25px;
+  letter-spacing: -2px;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+button.action {
+  border: none;
+  border-radius: 18px;
+  padding: 15px 25px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #111;
+  color: white;
+}
+
+button.secondary {
+  background: white;
+  color: #111;
+}
+
+input {
+  width: 100%;
+  border: none;
+  background: white;
+  border-radius: 17px;
+  padding: 17px;
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 14px;
+  outline: none;
+}
+
+.alarm-list {
+  margin-top: 18px;
+}
+
+.alarm {
+  background: #f2f2f7;
+  padding: 17px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.alarm-time {
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.switch {
+  width: 48px;
+  height: 29px;
+  background: #ccc;
+  border-radius: 30px;
+  position: relative;
+  cursor: pointer;
+}
+
+.switch.on {
+  background: #111;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  width: 23px;
+  height: 23px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: .2s;
+}
+
+.switch.on::after {
+  transform: translateX(19px);
+}
+
+.empty {
+  color: #888;
+  padding: 20px;
+}
+
+.footer {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  margin-top: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="logo">TimeWay</div>
+    <div class="date" id="date"></div>
+  </div>
+
+  <div class="clock-card">
+    <div class="time" id="clock">00:00</div>
+    <div class="seconds" id="seconds">00</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPage('alarm', this)">⏰ Alarm</button>
+    <button class="tab" onclick="showPage('timer', this)">⏱ Timer</button>
+    <button class="tab" onclick="showPage('stopwatch', this)">⏳ Stopwatch</button>
+  </div>
+
+  <!-- ALARM -->
+  <div id="alarm" class="page active">
+
+    <div class="card">
+      <h2>Alarm</h2>
+
+      <input type="time" id="alarmInput">
+
+      <button class="action" onclick="addAlarm()">
+        + Илова кардани Alarm
+      </button>
+    </div>
+
+    <div class="alarm-list" id="alarmList">
+      <div class="empty">Ҳоло Alarm нест</div>
+    </div>
+
+  </div>
+
+  <!-- TIMER -->
+  <div id="timer" class="page">
+
+    <div class="card">
+      <h2>Timer</h2>
+
+      <input type="number" id="minutes" placeholder="Дақиқа" min="0">
+      <input type="number" id="secondsInput" placeholder="Сония" min="0" max="59">
+
+      <div class="big-number" id="timerDisplay">
+        00:00
+      </div>
+
+      <div class="row">
+        <button class="action" onclick="startTimer()">Start</button>
+        <button class="action secondary" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STOPWATCH -->
+  <div id="stopwatch" class="page">
+
+    <div class="card">
+      <h2>Stopwatch</h2>
+
+      <div class="big-number" id="stopwatchDisplay">
+        00:00:00
+      </div>
+
+      <div class="row">
+        <button class="action" onclick="startStopwatch()">Start</button>
+        <button class="action secondary" onclick="resetStopwatch()">Reset</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    TimeWay • Your time, your way
+  </div>
+
+</div>
+
+<script>
+
+function updateClock() {
+
+  const now = new Date();
+
+  let h = String(now.getHours()).padStart(2, "0");
+  let m = String(now.getMinutes()).padStart(2, "0");
+  let s = String(now.getSeconds()).padStart(2, "0");
+
+  document.getElementById("clock").textContent = h + ":" + m;
+  document.getElementById("seconds").textContent = s;
+
+  document.getElementById("date").textContent =
+    now.toLocaleDateString("tg-TJ", {
+      day: "numeric",
+      month: "short"
+    });
+
+  checkAlarms(h + ":" + m);
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+
+function showPage(page, button) {
+
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove("active");
+  });
+
+  document.querySelectorAll(".tab").forEach(b => {
+    b.classList.remove("active");
+  });
+
+  document.getElementById(page).classList.add("active");
+  button.classList.add("active");
+}
+
+
+/* ALARM */
+
+let alarms = JSON.parse(localStorage.getItem("timewayAlarms") || "[]");
+
+function saveAlarms() {
+  localStorage.setItem("timewayAlarms", JSON.stringify(alarms));
+}
+
+function addAlarm() {
+
+  const input = document.getElementById("alarmInput");
+
+  if (!input.value) {
+    alert("Аввал вақтро интихоб кун");
+    return;
+  }
+
+  alarms.push({
+    time: input.value,
+    active: true,
+    lastTriggered: ""
+  });
+
+  input.value = "";
+
+  saveAlarms();
+  renderAlarms();
+}
+
+function renderAlarms() {
+
+  const list = document.getElementById("alarmList");
+
+  if (alarms.length === 0) {
+    list.innerHTML = '<div class="empty">Ҳоло Alarm нест</div>';
+    return;
+  }
+
+  list.innerHTML = "";
+
+  alarms.forEach((alarm, index) => {
+
+    const item = document.createElement("div");
+    item.className = "alarm";
+
+    item.innerHTML = `
+      <div>
+        <div class="alarm-time">${alarm.time}</div>
+        <small>${alarm.active ? "Фаъол" : "Хомӯш"}</small>
+      </div>
+
+      <div class="row">
+        <div class="switch ${alarm.active ? "on" : ""}"
+             onclick="toggleAlarm(${index})"></div>
+
+        <button onclick="deleteAlarm(${index})"
+                style="border:none;background:none;font-size:20px">
+          🗑
+        </button>
+      </div>
+    `;
+
+    list.appendChild(item);
+  });
+}
+
+function toggleAlarm(index) {
+
+  alarms[index].active = !alarms[index].active;
+
+  saveAlarms();
+  renderAlarms();
+}
+
+function deleteAlarm(index) {
+
+  alarms.splice(index, 1);
+
+  saveAlarms();
+  renderAlarms();
+}
+
+function checkAlarms(currentTime) {
+
+  const now = new Date();
+  const key = now.toDateString();
+
+  alarms.forEach(alarm => {
+
+    if (
+      alarm.active &&
+      alarm.time === currentTime &&
+      alarm.lastTriggered !== key
+    ) {
+
+      alarm.lastTriggered = key;
+
+      alert("⏰ TimeWay Alarm!\nВақт расид.");
+
+      saveAlarms();
+    }
+
+  });
+}
+
+renderAlarms();
+
+
+/* TIMER */
+
+let timerInterval = null;
+let timerSeconds = 0;
+
+function startTimer() {
+
+  if (timerInterval) return;
+
+  if (timerSeconds === 0) {
+
+    const min =
+      parseInt(document.getElementById("minutes").value) || 0;
+
+    const sec =
+      parseInt(document.getElementById("secondsInput").value) || 0;
+
+    timerSeconds = min * 60 + sec;
+  }
+
+  if (timerSeconds <= 0) {
+    alert("Вақти Timer-ро ворид кун");
+    return;
+  }
+
+  timerInterval = setInterval(() => {
+
+    timerSeconds--;
+
+    updateTimerDisplay();
+
+    if (timerSeconds <= 0) {
+
+      clearInterval(timerInterval);
+      timerInterval = null;
+
+      alert("⏱ TimeWay Timer тамом шуд!");
+    }
+
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+
+  let m = Math.floor(timerSeconds / 60);
+  let s = timerSeconds % 60;
+
+  document.getElementById("timerDisplay").textContent =
+    String(m).padStart(2, "0") + ":" +
+    String(s).padStart(2, "0");
+}
+
+function resetTimer() {
+
+  clearInterval(timerInterval);
+  timerInterval = null;
+
+  timerSeconds = 0;
+
+  document.getElementById("minutes").value = "";
+  document.getElementById("secondsInput").value = "";
+
+  updateTimerDisplay();
+}
+
+
+/* STOPWATCH */
+
+let stopwatchInterval = null;
+let stopwatchSeconds = 0;
+
+function startStopwatch() {
+
+  if (stopwatchInterval) return;
+
+  stopwatchInterval = setInterval(() => {
+
+    stopwatchSeconds++;
+
+    let h = Math.floor(stopwatchSeconds / 3600);
+    let m = Math.floor((stopw1hSeconds % 3600) / 60);
+    let s = stopwatchSeconds % 60
+
+    document.getElementById("stopwatchDisplay").textContent =
+      String(h).padStart(2, "0") + ":" +
+      String(m).padStart(2, "0") + ":" +
+      String(s).padStart(2, "0");
+
+  }, 1000);
+}
+
+function resetStopwatch() {
+
+  clearInterval(stopwatchInterval);
+  stopwatchInterval = null;
+
+  stopwatchSeconds = 0;
+
+  document.getElementById("stopwatchDisplay").textContent =
+    "00:00:00";
+}
+
+</script>
+
+</body>
+  </htm
